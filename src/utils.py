@@ -1,5 +1,7 @@
-def copy_board(board):
-    return [row[:] for row in board]
+class Player:
+    def __init__(self, name, stone):
+        self.name = name
+        self.stone = stone
 
 class Move:
     def __init__(self, coords, points):
@@ -9,14 +11,13 @@ class Move:
     def __repr__(self):
         return f'Move(coords={self.coords}, points={self.points})'
 
-class Player:
-    def __init__(self, name, stone):
-        self.name = name
-        self.stone = stone
-
 class Board:
     MAX_SCORE = 64
     MIN_SCORE = -64
+
+    @staticmethod
+    def copy_board(board):
+        return [row[:] for row in board]
     
     @staticmethod
     def calculate_scores(board, P1, P2):
@@ -89,7 +90,7 @@ class Board:
         row, col = move
         
         # needed to not modify original board
-        board_copy = copy_board(board)
+        board_copy = Board.copy_board(board)
         board_copy[row][col] = stone
         
         directions = [-1, 0, 1]
@@ -205,24 +206,5 @@ class Board:
         move = Board.alpha_beta_search(player, board, Board.MIN_SCORE, Board.MAX_SCORE, depth)
         return move.coords
 
-# Tests
 if __name__ == "__main__":
-    sample_board = [
-        [0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 2, 1, 0, 0, 0],
-        [0, 0, 0, 1, 2, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0],
-    ]
-
-    me = Board.get_valid_moves(sample_board, 1)
-    print(me)
-
-    print(Board.is_valid(sample_board, (2, 3), 1))
-
-    print(Board.simulate_move(sample_board, (2, 3), 1))
-
-    print(Board.alpha_beta_search(2, sample_board, -64, 64, 3))
+    pass
