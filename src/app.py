@@ -95,6 +95,10 @@ class OtelloPage(tk.Frame):
             self.label_subheading.configure(text=f'player vs computer')
             self.reset_board()
         elif self.AI == 2:
+            self.AI = 3
+            self.label_subheading.configure(text=f'computer vs computer')
+            self.reset_board()
+        elif self.AI == 3:
             self.AI = 0
             self.label_subheading.configure(text=f'player vs player')
             self.reset_board()
@@ -122,6 +126,7 @@ class OtelloPage(tk.Frame):
         self.populate_board(state)
     
     def reset_board(self):
+        self.stop()
         if not self.is_moving:
             state =  [
                 [0, 0, 0, 0, 0, 0, 0, 0],
@@ -147,16 +152,24 @@ class OtelloPage(tk.Frame):
                 [2, 2, 2, 2, 2, 1, 2, 2],
             ]
             '''
-            self.is_stopped = False
+            self.is_stopped = True
             self.is_done = False
             #self.P1 = 1
             #self.P2 = 2
             self.P1_score = 0
             self.P2_score = 0
-            
+
             self.populate_board(state)
             self.current_player = 2
-            self.game_conditions()
+
+            if self.AI == 3:
+                Thread(target=self.turn_by_turn_AI).start()
+            else: self.game_conditions()
+    
+    def stop(self):
+        if self.is_moving and not self.is_stopped:
+            self.is_stopped = True
+        self.is_done = False
     
     def suggest_moves(self, stone):
         moves = Board.get_valid_moves(self.current_board_state, stone)
@@ -210,6 +223,46 @@ class OtelloPage(tk.Frame):
         self.is_moving = False
         
         self.game_conditions()
+    
+    def turn_by_turn_AI(self):
+        self.is_stopped = False
+        P = 1
+        while True:
+            if self.is_stopped:
+                break
+            else:
+                self.assign_player(P)
+                
+                self.is_moving = True
+                move = Board.move(self.current_board_state, P, 5)
+                state =  Board.simulate_move(self.current_board_state, move, P)
+                time.sleep(0.5)
+                self.update_board(state)
+                
+                if move: self.board[move[0]][move[1]].configure(image=self.tile_images[P+4]) # mark move
+
+                p1_has_no_move = Board.no_move_left(self.current_board_state, 1)
+                p2_has_no_move = Board.no_move_left(self.current_board_state, 2)
+                
+                if ((self.P1_score + self.P2_score == 64)
+                        or (p1_has_no_move and p2_has_no_move)):
+                    if self.P1_score < self.P2_score:
+                        self.update_status('P2 wins')
+                    elif self.P1_score > self.P2_score:
+                        self.update_status('P1 wins')
+                    else:
+                        self.update_status('draw')
+                    self.is_done = True
+                    break
+                else:
+                    if P == 1:
+                        P = 2
+                    elif P == 2:
+                        P = 1
+        
+        #time.sleep(1)
+        self.is_moving = False
+        self.reset_board()
     
     def game_conditions(self):
         p1_has_no_move = Board.no_move_left(self.current_board_state, 1)
