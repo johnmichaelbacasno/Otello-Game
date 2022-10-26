@@ -49,7 +49,7 @@ SECONDARY_BUTTON_PROPERTIES = {
     'foreground': WHITE,
     'activebackground': GREY,
     'activeforeground': WHITE,
-    'width': 25,
+    'width': 15,
     'border': 0,
     'relief': 'raised'
 }
@@ -60,7 +60,7 @@ TERTIARY_BUTTON_PROPERTIES = {
     'foreground': WHITE,
     'activebackground': GREY,
     'activeforeground': WHITE,
-    'width': 8,
+    'width': 15,
     'border': 0,
     'relief': 'raised'
 }
