@@ -150,8 +150,8 @@ class OtelloPage(tk.Frame):
     
     def process_click(self, tile_x, tile_y):
         P = self.current_player
-
-        if not self.is_done and Board.is_valid(self.current_board_state, (tile_x, tile_y), P):
+        
+        if not self.is_done and not self.is_moving and Board.is_valid(self.current_board_state, (tile_x, tile_y), P):
             state =  Board.simulate_move(self.current_board_state, (tile_x, tile_y), P)
 
             self.update_board(state)
