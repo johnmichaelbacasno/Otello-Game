@@ -40,6 +40,7 @@ class OtelloPage(tk.Frame):
         self.current_board_state = []
 
         self.is_moving = False
+        self.AI = 0
         
         self.display_widgets()
 
@@ -53,7 +54,7 @@ class OtelloPage(tk.Frame):
         self.label_heading = tk.Label(self.frame_title, text='Otello Game', **HEADING_LABEL_PROPERTIES)
         self.label_heading.pack()
         
-        self.label_subheading = tk.Label(self.frame_title, text=f'play with another player', **SUBHEADING_LABEL_PROPERTIES)
+        self.label_subheading = tk.Label(self.frame_title, text=f'player vs player', **SUBHEADING_LABEL_PROPERTIES)
         self.label_subheading.pack()
         
         # Puzzle section
@@ -66,6 +67,9 @@ class OtelloPage(tk.Frame):
         
         self.button_reset = tk.Button(self.frame_buttons, text='reset game', command=lambda: self.reset_board(), **SECONDARY_BUTTON_PROPERTIES)
         self.button_reset.grid(row=0, column=1, padx=10, pady=10)
+
+        self.button_reset = tk.Button(self.frame_buttons, text='change', command=lambda: self.toggle(), **TERTIARY_BUTTON_PROPERTIES)
+        self.button_reset.grid(row=0, column=2, padx=10, pady=10)
         
         self.label_scores = tk.Label(self.frame_puzzle, text=f'P1: 0, P2: 0', **TEXT_LABEL_PROPERTIES)
         self.label_scores.grid(row=0, column=0, sticky='w', padx=10, pady=5)
@@ -80,6 +84,20 @@ class OtelloPage(tk.Frame):
         self.frame_board.grid(row=2, columnspan=2)
         
         self.initialize_board()
+    
+    def toggle(self):
+        if self.AI == 0:
+            self.AI = 1
+            self.label_subheading.configure(text=f'computer vs player')
+            self.reset_board()
+        elif self.AI == 1:
+            self.AI = 2
+            self.label_subheading.configure(text=f'player vs computer')
+            self.reset_board()
+        elif self.AI == 2:
+            self.AI = 0
+            self.label_subheading.configure(text=f'player vs player')
+            self.reset_board()
     
     def initialize_board(self):
          for i in range(8):
@@ -135,7 +153,6 @@ class OtelloPage(tk.Frame):
             #self.P2 = 2
             self.P1_score = 0
             self.P2_score = 0
-            self.AI = 2
             
             self.populate_board(state)
             self.current_player = 2
