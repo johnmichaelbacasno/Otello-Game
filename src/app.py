@@ -5,8 +5,6 @@ from tkinter import ttk
 from PIL import Image, ImageTk
 from threading import Thread
 
-from numpy import true_divide
-
 from src.config import *
 from src.utils import *
 
@@ -40,6 +38,8 @@ class OtelloPage(tk.Frame):
         self.tile_images = [ImageTk.PhotoImage(Image.open(f'src/assets/images/tile_{n}.png')) for n in range(7)]
         self.board = [x[:] for x in [[None] * 8] * 8]
         self.current_board_state = []
+
+        self.is_moving = False
         
         self.display_widgets()
 
@@ -85,7 +85,7 @@ class OtelloPage(tk.Frame):
          for i in range(8):
             for j in range(8):
                 self.board[i][j] = tk.Button(self.frame_board, **TILE_BUTTON_PROPERTIES)
-                self.board[i][j].grid(row=i, column=j, padx=3, pady=3)
+                self.board[i][j].grid(row=i, column=j, padx=2, pady=2)
     
     def populate_board(self, state):
         for i in range(8):
@@ -104,53 +104,42 @@ class OtelloPage(tk.Frame):
         self.populate_board(state)
     
     def reset_board(self):
-        state =  [
-            [0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 2, 1, 0, 0, 0],
-            [0, 0, 0, 1, 2, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0],
-        ]
-        
-        '''
-        # no move state
-        state =  [
-            [2, 2, 2, 2, 2, 2, 2, 2],
-            [2, 2, 2, 2, 2, 2, 2, 2],
-            [2, 2, 2, 2, 2, 2, 2, 2],
-            [2, 2, 2, 2, 2, 2, 2, 0],
-            [2, 2, 2, 2, 2, 2, 0, 0],
-            [2, 2, 2, 2, 2, 2, 0, 0],
-            [2, 2, 2, 2, 2, 2, 2, 0],
-            [2, 2, 2, 2, 2, 1, 2, 2],
-        ]
-        '''
-
-        self.is_done = False
-        self.P1 = 1
-        self.P2 = 2
-        self.P1_score = 0
-        self.P2_score = 0
-        self.AI_on = True
-        
-        self.populate_board(state)
-
-        self.current_player = 2
-        self.game_conditions()
-
-        '''
-        if not self.AI_on:
+        if not self.is_moving:
+            state =  [
+                [0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 2, 1, 0, 0, 0],
+                [0, 0, 0, 1, 2, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0],
+            ]
+            
+            '''
+            # no move state
+            state =  [
+                [2, 2, 2, 2, 2, 2, 2, 2],
+                [2, 2, 2, 2, 2, 2, 2, 2],
+                [2, 2, 2, 2, 2, 2, 2, 2],
+                [2, 2, 2, 2, 2, 2, 2, 0],
+                [2, 2, 2, 2, 2, 2, 0, 0],
+                [2, 2, 2, 2, 2, 2, 0, 0],
+                [2, 2, 2, 2, 2, 2, 2, 0],
+                [2, 2, 2, 2, 2, 1, 2, 2],
+            ]
+            '''
+            self.is_stopped = False
+            self.is_done = False
+            #self.P1 = 1
+            #self.P2 = 2
+            self.P1_score = 0
+            self.P2_score = 0
+            self.AI = 2
+            
+            self.populate_board(state)
             self.current_player = 2
             self.game_conditions()
-        else:
-            self.current_player = 2
-            self.game_conditions()
-        '''
-        
-        # self.is_moving = False
     
     def suggest_moves(self, stone):
         moves = Board.get_valid_moves(self.current_board_state, stone)
@@ -160,8 +149,18 @@ class OtelloPage(tk.Frame):
                 self.board[x][y].configure(image=self.tile_images[stone + 2])
     
     def process_click(self, tile_x, tile_y):
+        P = self.current_player
+
+        if not self.is_done and Board.is_valid(self.current_board_state, (tile_x, tile_y), P):
+            state =  Board.simulate_move(self.current_board_state, (tile_x, tile_y), P)
+
+            self.update_board(state)
+            self.board[tile_x][tile_y].configure(image=self.tile_images[P+4]) #mark
+            
+            self.game_conditions()
+        
+        '''
         if not self.AI_on:
-            P = self.current_player
             if not self.is_done and Board.is_valid(self.current_board_state, (tile_x, tile_y), P):
                 state =  Board.simulate_move(self.current_board_state, (tile_x, tile_y), P)
 
@@ -169,32 +168,31 @@ class OtelloPage(tk.Frame):
                 self.board[tile_x][tile_y].configure(image=self.tile_images[P+4]) #mark
                 
                 self.game_conditions()
-                
-                # if player dont have moves, still need to click before AI proceeds T^T
-                # add thread with loop to check state real time
         else:
-             if not self.is_done and Board.is_valid(self.current_board_state, (tile_x, tile_y), 1):
-                state =  Board.simulate_move(self.current_board_state, (tile_x, tile_y), 1)
+             if not self.is_done and Board.is_valid(self.current_board_state, (tile_x, tile_y), P):
+                state =  Board.simulate_move(self.current_board_state, (tile_x, tile_y), P)
 
                 self.update_board(state)
-                self.board[tile_x][tile_y].configure(image=self.tile_images[1+4]) #mark
+                self.board[tile_x][tile_y].configure(image=self.tile_images[P+4]) #mark
                 
                 self.game_conditions()
-
+        '''
     
-    def animate_AI(self):
-        self.animation_thread = Thread(target=self.move_AI)
+    def animate_AI(self, P):
+        self.animation_thread = Thread(target=self.move_AI, args=(P,))
         self.animation_thread.start()
     
-    def move_AI(self):
-        move = Board.move(self.current_board_state, 2, 5)
-        state =  Board.simulate_move(self.current_board_state, move, 2)
+    def move_AI(self, P):
+        self.is_moving = True
+        move = Board.move(self.current_board_state, P, 5)
+        state =  Board.simulate_move(self.current_board_state, move, P)
         time.sleep(0.5)
         self.update_board(state)
         
-        if move: self.board[move[0]][move[1]].configure(image=self.tile_images[6]) # mark move
+        if move: self.board[move[0]][move[1]].configure(image=self.tile_images[P+4]) # mark move
+        self.is_moving = False
+        
         self.game_conditions()
-        #self.assign_player(1)
     
     def game_conditions(self):
         p1_has_no_move = Board.no_move_left(self.current_board_state, 1)
@@ -224,19 +222,25 @@ class OtelloPage(tk.Frame):
     def change_player(self):
         if self.current_player == 1:
             self.assign_player(2)
-            if self.AI_on:
-                self.animate_AI()
+            if self.AI == 2:
+                self.animate_AI(2)
+        
         elif self.current_player == 2:
             self.assign_player(1)
-        
+            if self.AI == 1:
+                self.animate_AI(1)
+    
     def assign_player(self, P):
         self.suggest_moves(P)
         self.update_status(f'P{P}\'s turn')
         self.current_player = P
     
     def update_scores(self):
-        self.P1_score, self.P2_score = Board.calculate_scores(self.current_board_state, self.P1, self.P2)
+        self.P1_score, self.P2_score = Board.calculate_scores(self.current_board_state, 1, 2)
         self.label_scores.configure(text=f'P1: {self.P1_score}, P2: {self.P2_score}')
     
     def update_status(self, status):
         self.label_status.configure(text=status)
+
+# if player dont have moves, still need to click before AI proceeds T^T
+# add thread with loop to check state real time
