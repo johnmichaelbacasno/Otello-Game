@@ -253,12 +253,14 @@ class OtelloPage(tk.Frame):
                     else:
                         self.update_status('draw')
                     self.is_done = True
+                    time.sleep(2.5)
                     break
                 else:
                     if P == 1:
                         P = 2
                     elif P == 2:
                         P = 1
+            
         
         #time.sleep(1)
         self.is_moving = False
