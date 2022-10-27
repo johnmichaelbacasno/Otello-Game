@@ -95,6 +95,11 @@ class OtelloPage(tk.Frame):
             self.label_subheading.configure(text=f'player vs computer')
             self.reset_board()
         elif self.AI == 2:
+            self.AI = 0
+            self.label_subheading.configure(text=f'player vs player')
+            self.reset_board()
+        '''
+        elif self.AI == 2:
             self.AI = 3
             self.label_subheading.configure(text=f'computer vs computer')
             self.reset_board()
@@ -102,6 +107,7 @@ class OtelloPage(tk.Frame):
             self.AI = 0
             self.label_subheading.configure(text=f'player vs player')
             self.reset_board()
+        '''
     
     def initialize_board(self):
          for i in range(8):
