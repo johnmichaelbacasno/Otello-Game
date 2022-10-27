@@ -1,8 +1,3 @@
-class Player:
-    def __init__(self, name, stone):
-        self.name = name
-        self.stone = stone
-
 class Move:
     def __init__(self, coords, points):
         self.coords = coords
@@ -14,7 +9,7 @@ class Move:
 class Board:
     MAX_SCORE = 64
     MIN_SCORE = -64
-
+    
     @staticmethod
     def copy_board(board):
         return [row[:] for row in board]
@@ -29,6 +24,17 @@ class Board:
                 elif board[x][y] == P2:
                     P2_score += 1
         return P1_score, P2_score
+    
+    @staticmethod
+    def calculate_score(board, stone):
+        score = 0
+        for x in range(8):
+            for j in range(8):
+                if board[x][j] == stone:
+                    score += 1
+                elif board[x][j] == Board.opponent_stone(stone):
+                    score -= 1
+        return score
     
     @staticmethod
     def in_bounds(row, col):
@@ -69,13 +75,13 @@ class Board:
         return points
     
     @staticmethod
-    def get_valid_moves(state, stone):
+    def get_valid_moves(board, stone):
         valid_moves = []
         for i in range(8):
             for j in range(8):
                 # explore free spaces only
-                if state[i][j] == 0:
-                    gain = Board.check_move(state, i, j, stone)
+                if board[i][j] == 0:
+                    gain = Board.check_move(board, i, j, stone)
                     if gain > 0:
                         valid_moves.append(Move((i, j), gain))
         if not valid_moves:
@@ -83,7 +89,7 @@ class Board:
         else:
             return valid_moves
     
-    def simulate_move(board, move, stone):
+    def transform_board(board, move, stone):
         if move == None:
             return board
         
@@ -126,14 +132,49 @@ class Board:
     
     @staticmethod
     def is_valid(board, move, stone):
+        '''
         moves = Board.get_valid_moves(board, stone)
         if moves:
             return move in (_.coords for _ in moves)
         return False
+        '''
+        x, y = move
+        gain = Board.check_move(board, x, y, stone)
+        return gain > 0
     
     @staticmethod
-    def no_move_left(board, stone):
-        return not bool(Board.get_valid_moves(board, stone))
+    def has_no_move(board, stone):
+        return Board.get_valid_moves(board, stone) == None
+    
+    def final_value(board, stone):
+        # if player wins return max score so adv search uses this branch
+        score = Board.calculate_score(board, stone)
+        if score < 0:
+            return Board.MIN_SCORE
+        elif score > 0:
+            return Board.MAX_SCORE
+        return score
+    
+    @staticmethod
+    def opponent_stone(stone):
+        if stone == 1:
+            return 2
+        elif stone == 2:
+            return 1
+        else:
+            return 0
+    
+    @staticmethod
+    def move(board, stone, depth=1):
+        '''
+        valid_moves = Board.get_valid_moves(board, stone)
+        if not valid_moves:
+            return None
+        '''
+        if Board.has_no_move(board, stone):
+            return None
+        move = Board.alpha_beta_search(stone, board, Board.MIN_SCORE, Board.MAX_SCORE, depth)
+        return move.coords
     
     @staticmethod
     def alpha_beta_search(stone, board, alpha, beta, depth):
@@ -159,7 +200,7 @@ class Board:
             if beta <= alpha:
                 # prune nodes that aren't worth visiting
                 break
-            sim_move_board = Board.simulate_move(board, move.coords, stone)
+            sim_move_board = Board.transform_board(board, move.coords, stone)
             value = -Board.alpha_beta_search(Board.opponent_stone(stone), sim_move_board, -beta, -alpha, depth - 1).points 
             if value > alpha:
                 # new max
@@ -168,43 +209,6 @@ class Board:
                 best_move.points = alpha
             #Board.moves_analized.append(move)
         return best_move
-    
-    def final_value(board, stone):
-        # if player wins return max score so adv search uses this branch
-        score = Board.calculate_score(board, stone)
-        if score < 0:
-            return Board.MIN_SCORE
-        elif score > 0:
-            return Board.MAX_SCORE
-        return score
-    
-    @staticmethod
-    def opponent_stone(stone):
-        if stone == 1:
-            return 2
-        elif stone == 2:
-            return 1
-        else:
-            return 0
-    
-    @staticmethod
-    def calculate_score(board, stone):
-        score = 0
-        for x in range(8):
-            for j in range(8):
-                if board[x][j] == stone:
-                    score += 1
-                elif board[x][j] == Board.opponent_stone(stone):
-                    score -= 1
-        return score
-    
-    @staticmethod
-    def move(board, player, depth=1):
-        Board.valid_moves = Board.get_valid_moves(board, player)
-        if not Board.valid_moves:
-            return None
-        move = Board.alpha_beta_search(player, board, Board.MIN_SCORE, Board.MAX_SCORE, depth)
-        return move.coords
 
 if __name__ == "__main__":
     pass
