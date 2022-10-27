@@ -182,7 +182,7 @@ class OtelloPage(tk.Frame):
         P = self.current_player
         
         if not self.is_done and not self.is_moving and Board.is_valid(self.current_board_state, (tile_x, tile_y), P):
-            state =  Board.simulate_move(self.current_board_state, (tile_x, tile_y), P)
+            state =  Board.transform_board(self.current_board_state, (tile_x, tile_y), P)
 
             self.update_board(state)
             self.board[tile_x][tile_y].configure(image=self.tile_images[P+4]) #mark
@@ -215,7 +215,7 @@ class OtelloPage(tk.Frame):
     def move_AI(self, P):
         self.is_moving = True
         move = Board.move(self.current_board_state, P, 5)
-        state =  Board.simulate_move(self.current_board_state, move, P)
+        state =  Board.transform_board(self.current_board_state, move, P)
         time.sleep(0.5)
         self.update_board(state)
         
@@ -235,14 +235,14 @@ class OtelloPage(tk.Frame):
                 
                 self.is_moving = True
                 move = Board.move(self.current_board_state, P, 5)
-                state =  Board.simulate_move(self.current_board_state, move, P)
+                state =  Board.transform_board(self.current_board_state, move, P)
                 time.sleep(0.5)
                 self.update_board(state)
                 
                 if move: self.board[move[0]][move[1]].configure(image=self.tile_images[P+4]) # mark move
 
-                p1_has_no_move = Board.no_move_left(self.current_board_state, 1)
-                p2_has_no_move = Board.no_move_left(self.current_board_state, 2)
+                p1_has_no_move = Board.has_no_move(self.current_board_state, 1)
+                p2_has_no_move = Board.has_no_move(self.current_board_state, 2)
                 
                 if ((self.P1_score + self.P2_score == 64)
                         or (p1_has_no_move and p2_has_no_move)):
@@ -267,8 +267,8 @@ class OtelloPage(tk.Frame):
         self.reset_board()
     
     def game_conditions(self):
-        p1_has_no_move = Board.no_move_left(self.current_board_state, 1)
-        p2_has_no_move = Board.no_move_left(self.current_board_state, 2)
+        p1_has_no_move = Board.has_no_move(self.current_board_state, 1)
+        p2_has_no_move = Board.has_no_move(self.current_board_state, 2)
         
         if ((self.P1_score + self.P2_score == 64)
                 or (p1_has_no_move and p2_has_no_move)):
