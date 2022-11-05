@@ -162,8 +162,8 @@ class Board:
         if Board.has_no_move(board, stone):
             return None
         
-        #move = Board.alpha_beta_search(stone, board, Board.MIN_SCORE, Board.MAX_SCORE, depth)
-        move = Board.minimax_search(stone, board, depth)
+        move = Board.alpha_beta_search(stone, board, Board.MIN_SCORE, Board.MAX_SCORE, depth)
+        #move = Board.minimax_search(stone, board, depth)
         return move.coords
     
     @staticmethod
