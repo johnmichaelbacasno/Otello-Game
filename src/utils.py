@@ -138,8 +138,7 @@ class Board:
             return move in (_.coords for _ in moves)
         return False
         '''
-        x, y = move
-        gain = Board.check_move(board, x, y, stone)
+        gain = Board.check_move(board, *move, stone)
         return gain > 0
     
     @staticmethod
@@ -173,8 +172,36 @@ class Board:
         '''
         if Board.has_no_move(board, stone):
             return None
+        
         move = Board.alpha_beta_search(stone, board, Board.MIN_SCORE, Board.MAX_SCORE, depth)
+        #move = Board.minimax_search(stone, board, depth)
         return move.coords
+    
+    @staticmethod
+    def minimax_search(stone, board, depth):
+        # recursion base case
+        if depth == 0:
+            return Move(None, Board.calculate_score(board, stone))
+        
+        valid_moves = Board.get_valid_moves(board, stone)
+        
+        if not valid_moves:
+            # no more valid moves evaluate oponents next play
+            if not Board.get_valid_moves(board, Board.opponent_stone(stone)):
+                # no more moves for either player, return final state
+                return Move(None, Board.final_value(board, stone))
+            # opponent has valid moves, return points for that move
+            value = -Board.minimax_search(Board.opponent_stone(stone), board, depth - 1).points 
+            return Move(None, value)
+        
+        best_move = valid_moves[0]
+        
+        for move in valid_moves[1:]:
+            move_board = Board.transform_board(board, move.coords, stone)
+            value = -Board.minimax_search(Board.opponent_stone(stone), move_board, depth - 1).points 
+            if value > best_move.points:
+                best_move = move
+        return best_move
     
     @staticmethod
     def alpha_beta_search(stone, board, alpha, beta, depth):
@@ -200,8 +227,8 @@ class Board:
             if beta <= alpha:
                 # prune nodes that aren't worth visiting
                 break
-            sim_move_board = Board.transform_board(board, move.coords, stone)
-            value = -Board.alpha_beta_search(Board.opponent_stone(stone), sim_move_board, -beta, -alpha, depth - 1).points 
+            move_board = Board.transform_board(board, move.coords, stone)
+            value = -Board.alpha_beta_search(Board.opponent_stone(stone), move_board, -beta, -alpha, depth - 1).points 
             if value > alpha:
                 # new max
                 alpha = value
