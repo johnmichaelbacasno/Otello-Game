@@ -132,12 +132,6 @@ class Board:
     
     @staticmethod
     def is_valid(board, move, stone):
-        '''
-        moves = Board.get_valid_moves(board, stone)
-        if moves:
-            return move in (_.coords for _ in moves)
-        return False
-        '''
         gain = Board.check_move(board, *move, stone)
         return gain > 0
     
@@ -165,16 +159,11 @@ class Board:
     
     @staticmethod
     def move(board, stone, depth=1):
-        '''
-        valid_moves = Board.get_valid_moves(board, stone)
-        if not valid_moves:
-            return None
-        '''
         if Board.has_no_move(board, stone):
             return None
         
-        move = Board.alpha_beta_search(stone, board, Board.MIN_SCORE, Board.MAX_SCORE, depth)
-        #move = Board.minimax_search(stone, board, depth)
+        #move = Board.alpha_beta_search(stone, board, Board.MIN_SCORE, Board.MAX_SCORE, depth)
+        move = Board.minimax_search(stone, board, depth)
         return move.coords
     
     @staticmethod
@@ -194,13 +183,14 @@ class Board:
             value = -Board.minimax_search(Board.opponent_stone(stone), board, depth - 1).points 
             return Move(None, value)
         
-        best_move = valid_moves[0]
+        best_move = None
         
-        for move in valid_moves[1:]:
+        for move in valid_moves:
             move_board = Board.transform_board(board, move.coords, stone)
             value = -Board.minimax_search(Board.opponent_stone(stone), move_board, depth - 1).points 
-            if value > best_move.points:
+            if (best_move is None) or (value > best_move.points):
                 best_move = move
+        
         return best_move
     
     @staticmethod
@@ -234,7 +224,7 @@ class Board:
                 alpha = value
                 best_move = move
                 best_move.points = alpha
-            #Board.moves_analized.append(move)
+        
         return best_move
 
 if __name__ == "__main__":
