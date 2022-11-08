@@ -162,12 +162,60 @@ class Board:
         if Board.has_no_move(board, stone):
             return None
         
-        move = Board.alpha_beta_search(stone, board, Board.MIN_SCORE, Board.MAX_SCORE, depth)
-        #move = Board.minimax_search(stone, board, depth)
+        #move = Board.alpha_beta_search(stone, board, Board.MIN_SCORE, Board.MAX_SCORE, depth)
+        move = Board.negamax_search(stone, board, depth)
         return move.coords
     
     @staticmethod
     def minimax_search(stone, board, depth):
+        # recursion base case
+        if depth == 0:
+            return Move(None, Board.calculate_score(board, stone))
+        
+        valid_moves = Board.get_valid_moves(board, stone)
+        
+        if stone == 1:
+            if not valid_moves:
+                # no more valid moves evaluate oponents next play
+                if not Board.get_valid_moves(board, 2):
+                    # no more moves for either player, return final state
+                    return Move(None, Board.final_value(board, stone))
+                # opponent has valid moves, return points for that move
+                value = Board.minimax_search(2, board, depth - 1).points 
+                return Move(None, value)
+            
+            best_move = None
+            
+            for move in valid_moves:
+                move_board = Board.transform_board(board, move.coords, stone)
+                value = Board.minimax_search(2, move_board, depth - 1).points 
+                if (best_move is None) or (value > best_move.points):
+                    best_move = move
+            
+            return best_move
+        
+        else:
+            if not valid_moves:
+                # no more valid moves evaluate oponents next play
+                if not Board.get_valid_moves(board, 1):
+                    # no more moves for either player, return final state
+                    return Move(None, Board.final_value(board, stone))
+                # opponent has valid moves, return points for that move
+                value = Board.minimax_search(1, board, depth - 1).points 
+                return Move(None, value)
+            
+            best_move = None
+            
+            for move in valid_moves:
+                move_board = Board.transform_board(board, move.coords, stone)
+                value = Board.minimax_search(1, move_board, depth - 1).points 
+                if (best_move is None) or (value > best_move.points):
+                    best_move = move
+            
+            return best_move
+    
+    @staticmethod
+    def negamax_search(stone, board, depth):
         # recursion base case
         if depth == 0:
             return Move(None, Board.calculate_score(board, stone))
@@ -194,7 +242,7 @@ class Board:
         return best_move
     
     @staticmethod
-    def alpha_beta_search(stone, board, alpha, beta, depth):
+    def alphabeta_search(stone, board, alpha, beta, depth):
         # recursion base case
         if depth == 0:
             return Move(None, Board.calculate_score(board, stone))
@@ -207,7 +255,7 @@ class Board:
                 # no more moves for either player, return final state
                 return Move(None, Board.final_value(board, stone))
             # opponent has valid moves, return points for that move
-            value = -Board.alpha_beta_search(Board.opponent_stone(stone), board, -beta, -alpha, depth - 1).points 
+            value = -Board.alphabeta_search(Board.opponent_stone(stone), board, -beta, -alpha, depth - 1).points 
             return Move(None, value)
         
         best_move = valid_moves[0]
@@ -218,7 +266,7 @@ class Board:
                 # prune nodes that aren't worth visiting
                 break
             move_board = Board.transform_board(board, move.coords, stone)
-            value = -Board.alpha_beta_search(Board.opponent_stone(stone), move_board, -beta, -alpha, depth - 1).points 
+            value = -Board.alphabeta_search(Board.opponent_stone(stone), move_board, -beta, -alpha, depth - 1).points 
             if value > alpha:
                 # new max
                 alpha = value
