@@ -1,5 +1,5 @@
-from src.app import Otello
+from src.app import Othello
 
 if __name__ == '__main__':
-    app = Otello()
+    app = Othello()
     app.mainloop()
