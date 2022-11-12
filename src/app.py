@@ -8,10 +8,10 @@ from threading import Thread
 from src.config import *
 from src.utils import *
 
-class Otello(tk.Tk):
+class Othello(tk.Tk):
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
-        self.title('Otello Game')
+        self.title('Othello Game')
         self.geometry('750x750')
         self.resizable(False, False)
         self.iconbitmap('src/assets/images/app.ico')
@@ -22,14 +22,14 @@ class Otello(tk.Tk):
         self.container.grid_rowconfigure(0, weight=1)
         self.container.grid_columnconfigure(0, weight=1)
         
-        self.show_frame(OtelloPage, **BASIC_FRAME_PROPERTIES)
+        self.show_frame(OthelloPage, **BASIC_FRAME_PROPERTIES)
     
     def show_frame(self, page, *args, **kwargs):
         frame = page(self.container, self, *args, **kwargs)
         frame.grid(row=0, column=0, sticky='nsew')
         frame.tkraise()
 
-class OtelloPage(tk.Frame):
+class OthelloPage(tk.Frame):
     def __init__(self, parent, controller, *args, **kwargs):
         tk.Frame.__init__(self, parent, *args, **kwargs)
         self.parent = parent
@@ -51,7 +51,7 @@ class OtelloPage(tk.Frame):
         self.frame_title = tk.Frame(self, **BASIC_FRAME_PROPERTIES)
         self.frame_title.pack(pady=25)
         
-        self.label_heading = tk.Label(self.frame_title, text='Otello Game', **HEADING_LABEL_PROPERTIES)
+        self.label_heading = tk.Label(self.frame_title, text='Othello Game', **HEADING_LABEL_PROPERTIES)
         self.label_heading.pack()
         
         self.label_subheading = tk.Label(self.frame_title, text=f'player vs player', **SUBHEADING_LABEL_PROPERTIES)
@@ -193,7 +193,7 @@ class OtelloPage(tk.Frame):
     def process_click(self, tile_x, tile_y):
         player = self.current_player
         
-        if not self.is_done and not self.is_moving and Board.is_valid(self.current_board_state, (tile_x, tile_y), player):
+        if not self.is_done and not self.is_moving and Board.is_valid(self.current_board_state, tile_x, tile_y, player):
             state =  Board.transform_board(self.current_board_state, (tile_x, tile_y), player)
             
             self.update_board(state)
@@ -209,12 +209,12 @@ class OtelloPage(tk.Frame):
     def move_AI(self, player):
         self.is_moving = True
         
-        move = Board.move(self.current_board_state, player, 5)
+        move = Board.best_move(self.current_board_state, player, 5).coords
         state =  Board.transform_board(self.current_board_state, move, player)
         time.sleep(0.5)
         self.update_board(state)
         
-        if move: self.board[move[0]][move[1]].configure(image=self.tile_images[player+4]) # mark move
+        if move: self.board[move[0]][move[1]].configure(image=self.tile_images[player + 4]) # mark move
         
         self.is_moving = False
         
@@ -303,7 +303,7 @@ class OtelloPage(tk.Frame):
         self.current_player = player
     
     def update_scores(self):
-        self.P1_score, self.P2_score = Board.calculate_scores(self.current_board_state, 1, 2)
+        self.P1_score, self.P2_score = Board.player_scores(self.current_board_state, 1, 2)
         self.label_scores.configure(text=f'P1: {self.P1_score:02} | P2: {self.P2_score:02}')
     
     def update_status(self, status):
