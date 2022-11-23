@@ -7,8 +7,20 @@ class Move:
         return f'Move(coords={self.coords}, points={self.points})'
 
 class Board:
-    MAX_SCORE = 64
-    MIN_SCORE = -64
+    MAX_SCORE = 100
+    MIN_SCORE = -MAX_SCORE
+
+    # board of weight of each position, where corners and most edges are important
+    BOARD_WEIGHTS = [
+        [100, -10,  10,   3,   3,  10, -10, 100],
+        [-10, -20,  -3,  -3,  -3,  -3, -20, -10],
+        [ 10,  -3,   8,   1,   1,   8,  -3,  10],
+        [  3,  -3,   1,   1,   1,   1,  -3,   3],
+        [  3,  -3,   1,   1,   1,   1,  -3,   3],
+        [ 10,  -3,   8,   1,   1,   8,  -3,  10],
+        [-10, -20,  -3,  -3,  -3,  -3, -20, -10],
+        [100, -10,  10,   3,   3,  10, -10, 100],
+    ]
     
     @staticmethod
     def copy_board(board):
@@ -34,9 +46,9 @@ class Board:
         for row in range(8):
             for col in range(8):
                 if board[row][col] == player:
-                    score += 1
+                    score += Board.BOARD_WEIGHTS[row][col]
                 elif board[row][col] == Board.opponent(player):
-                    score -= 1
+                    score -= Board.BOARD_WEIGHTS[row][col]
         return score
     
     @staticmethod
