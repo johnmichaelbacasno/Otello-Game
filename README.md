@@ -7,8 +7,7 @@ An implementation of the 2-player board game Othello using Python Tkinter
 
 The goal of this project was to create the Othello board game using artificial
 intelligence (AI). The board is solved using Minimax and Alpha-Beta Pruning
-algorithm with a heuristic function that calculates the score, which is the
-sum of static board weights based on importance.
+algorithm with a Static Weights as the heuristic function.
 
 ## Dependencies ##
 * Python 3.0 and above
